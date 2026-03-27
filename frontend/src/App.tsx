@@ -20,6 +20,7 @@ function App() {
   const OPCODE_START = 1;
   const OPCODE_UPDATE = 2;
   const OPCODE_DONE = 3;
+  const OPCODE_MOVE = 4;
   const OPCODE_REJECTED = 5;
 
   const [board, setBoard] = useState<number[]>([]);
@@ -40,6 +41,10 @@ function App() {
     if (myMark === 2) return "O";
     return "?";
   }, [myMark]);
+
+  const isMyTurn = useMemo(() => {
+    return Boolean(userId && activePlayer && userId === activePlayer && !winner);
+  }, [userId, activePlayer, winner]);
 
   function parsePayload(raw: unknown): unknown | null {
     if (!raw) return null;
@@ -158,9 +163,19 @@ function App() {
               : null
           );
 
-          setStatus("match finished");
+          const reason =
+            typeof p?.reason === "string" ? p.reason : "completed";
+          if (typeof p?.winner === "string" && userId && p.winner === userId) {
+            setStatus(`match finished — you won (${reason})`);
+          } else if (typeof p?.winner === "string") {
+            setStatus(`match finished — you lost (${reason})`);
+          } else {
+            setStatus(`match finished — draw (${reason})`);
+          }
         } else if (opNum === OPCODE_REJECTED) {
-          setStatus("move rejected");
+          const reason =
+            typeof p?.reason === "string" ? p.reason : "invalid move";
+          setStatus(`move rejected: ${reason}`);
         }
       };
     } catch (err) {
@@ -194,14 +209,43 @@ function App() {
     }
   };
 
+  const handleCellClick = async (position: number) => {
+    try {
+      if (!matchId) return;
+      if (!isMyTurn) {
+        setStatus("not your turn");
+        return;
+      }
+
+      const cell = board[position] ?? 0;
+      if (cell !== 0) {
+        setStatus("cell already occupied");
+        return;
+      }
+
+      const sock = getSocket();
+      const payload = JSON.stringify({ position });
+      await sock.sendMatchState(matchId, OPCODE_MOVE, payload);
+      setStatus("move sent...");
+    } catch (err) {
+      console.error(err);
+      setStatus("failed to send move");
+    }
+  };
+
   function renderCell(i: number) {
     const cell = board[i] ?? 0;
     const char = cell === 1 ? "X" : cell === 2 ? "O" : "";
     const isWinningCell = winnerPositions?.includes(i) ?? false;
+    const isClickable = Boolean(matchId && isMyTurn && cell === 0);
 
     return (
       <div
         key={i}
+        onClick={() => {
+          if (!isClickable) return;
+          void handleCellClick(i);
+        }}
         style={{
           width: 78,
           height: 78,
@@ -214,6 +258,8 @@ function App() {
           fontSize: 34,
           fontWeight: 800,
           userSelect: "none",
+          cursor: isClickable ? "pointer" : "default",
+          opacity: isClickable ? 1 : 0.85,
         }}
       >
         {char}
@@ -235,6 +281,11 @@ function App() {
       {userId && myMark && (
         <p>
           <strong>You are:</strong> {myMarkChar}
+        </p>
+      )}
+      {matchId && (
+        <p>
+          <strong>Turn:</strong> {isMyTurn ? "Your turn" : "Opponent's turn"}
         </p>
       )}
       {matchId && (
