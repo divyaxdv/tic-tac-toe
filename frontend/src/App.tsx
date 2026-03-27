@@ -68,6 +68,15 @@ function App() {
     return `${remainingSeconds}s`;
   }, [matchId, winner, activePlayer, remainingSeconds]);
 
+  /** Subtle win / loss / draw theming (Victory / Defeat / Draw from server). */
+  const outcomeTone = useMemo<"win" | "loss" | "draw" | null>(() => {
+    if (!resultMessage) return null;
+    if (resultMessage === "Victory") return "win";
+    if (resultMessage === "Defeat") return "loss";
+    if (resultMessage === "Draw") return "draw";
+    return null;
+  }, [resultMessage]);
+
   useEffect(() => {
     userIdRef.current = userId;
   }, [userId]);
@@ -175,7 +184,7 @@ function App() {
       setBoard(nextBoard);
 
       const winnerId = typeof p?.winner === "string" ? p.winner : null;
-      const reason = typeof p?.reason === "string" ? p.reason : "completed";
+      //     const reason = typeof p?.reason === "string" ? p.reason : "completed";
       const nextWinnerPositions = Array.isArray(p?.winnerPositions)
         ? (p.winnerPositions as unknown[]).map((v) =>
             typeof v === "number" ? v : 0,
@@ -188,13 +197,13 @@ function App() {
 
       if (winnerId && uid && winnerId === uid) {
         setResultMessage("Victory");
-        setStatus(`You won (${reason})`);
+        setStatus(`You won `);
       } else if (winnerId) {
         setResultMessage("Defeat");
-        setStatus(`You lost (${reason})`);
+        setStatus(`You lost`);
       } else {
         setResultMessage("Draw");
-        setStatus(`Draw (${reason})`);
+        setStatus(`Draw `);
       }
       return;
     }
@@ -283,10 +292,17 @@ function App() {
     const isWinningCell = winnerPositions?.includes(index) ?? false;
     const isClickable = Boolean(matchId && isMyTurn && !winner && cell === 0);
 
+    const winLineClass =
+      isWinningCell && outcomeTone === "loss"
+        ? "cell-win cell-win--loss"
+        : isWinningCell
+          ? "cell-win"
+          : "";
+
     return (
       <button
         key={index}
-        className={`cell ${isWinningCell ? "cell-win" : ""}`}
+        className={`cell ${winLineClass}`}
         onClick={() => void handleCellClick(index)}
         disabled={!isClickable}
       >
@@ -295,15 +311,29 @@ function App() {
     );
   }
 
+  const shellClass = [
+    "game-shell",
+    outcomeTone ? `game-shell--${outcomeTone}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <main className="game-screen">
-      <section className="game-shell">
+    <main className={`game-screen${outcomeTone ? ` game-screen--${outcomeTone}` : ""}`}>
+      <section className={shellClass}>
         <header className="game-header">
           <h1 className="game-title">Tic-Tac-Toe Multiplayer</h1>
         </header>
 
         <section className="hud-row">
-          <div className="hud-pill">
+          <div
+            className={[
+              "hud-pill",
+              outcomeTone ? `hud-pill--${outcomeTone}` : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             <span className="hud-label">Status</span>
             <span>{status}</span>
           </div>
@@ -334,11 +364,29 @@ function App() {
           </button>
         </div>
 
-        <section className="board">
+        <section
+          className={[
+            "board",
+            outcomeTone ? `board--${outcomeTone}` : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+        >
           {Array.from({ length: 9 }).map((_, i) => renderCell(i))}
         </section>
 
-        {resultMessage && <div className="result-banner">{resultMessage}</div>}
+        {resultMessage && (
+          <div
+            className={[
+              "result-banner",
+              outcomeTone ? `result-banner--${outcomeTone}` : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {resultMessage}
+          </div>
+        )}
 
         <footer className="meta-line">
           {matchId ? (

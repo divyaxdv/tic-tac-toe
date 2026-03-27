@@ -6,12 +6,56 @@
   justify-content: center;
   padding: 20px 14px;
   box-sizing: border-box;
+  transition: background-color 0.45s ease;
+}
+
+/* Very subtle full-screen wash when a match ends */
+.game-screen--win {
+  background-color: rgba(22, 101, 52, 0.06);
+}
+
+.game-screen--loss {
+  background-color: rgba(127, 29, 29, 0.07);
+}
+
+.game-screen--draw {
+  background-color: rgba(30, 41, 59, 0.35);
 }
 
 .game-shell {
   width: min(94vw, 520px);
   margin: 0 auto;
   text-align: center;
+  border-radius: 18px;
+  padding: 12px 10px 16px;
+  transition: box-shadow 0.45s ease, background 0.45s ease;
+}
+
+.game-shell--win {
+  background: radial-gradient(
+    ellipse 130% 90% at 50% -15%,
+    rgba(34, 197, 94, 0.18),
+    transparent 58%
+  );
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.22);
+}
+
+.game-shell--loss {
+  background: radial-gradient(
+    ellipse 130% 90% at 50% -15%,
+    rgba(248, 113, 113, 0.14),
+    transparent 58%
+  );
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.22);
+}
+
+.game-shell--draw {
+  background: radial-gradient(
+    ellipse 130% 90% at 50% -15%,
+    rgba(148, 163, 184, 0.12),
+    transparent 58%
+  );
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.2);
 }
 
 .game-header {
@@ -46,6 +90,22 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: border-color 0.35s ease, background 0.35s ease;
+}
+
+.hud-pill--win {
+  border-color: rgba(34, 197, 94, 0.42);
+  background: rgba(34, 197, 94, 0.09);
+}
+
+.hud-pill--loss {
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.hud-pill--draw {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(51, 65, 85, 0.45);
 }
 
 .hud-label {
@@ -60,6 +120,21 @@
   font-weight: 700;
   font-size: clamp(1.1rem, 4vw, 1.45rem);
   color: #f8fafc;
+  transition: color 0.35s ease;
+}
+
+.result-banner--win {
+  color: #86efac;
+  text-shadow: 0 0 24px rgba(34, 197, 94, 0.35);
+}
+
+.result-banner--loss {
+  color: #fecaca;
+  text-shadow: 0 0 24px rgba(248, 113, 113, 0.3);
+}
+
+.result-banner--draw {
+  color: #cbd5e1;
 }
 
 .action-row {
@@ -80,6 +155,21 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
+  padding: 6px;
+  border-radius: 18px;
+  transition: box-shadow 0.45s ease;
+}
+
+.board--win {
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.28);
+}
+
+.board--loss {
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.28);
+}
+
+.board--draw {
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.22);
 }
 
 .cell {
@@ -110,6 +200,12 @@
 .cell-win {
   border-color: #22c55e;
   background: rgba(34, 197, 94, 0.22);
+}
+
+/* Opponent’s winning line when you lost */
+.cell-win--loss {
+  border-color: #f87171;
+  background: rgba(248, 113, 113, 0.22);
 }
 
 .meta-line {
