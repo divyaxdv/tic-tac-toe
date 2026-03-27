@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { authenticate, connectSocket, findMatch, getSocket } from "./lib/nakama";
+import {
+  authenticate,
+  connectSocket,
+  findMatch,
+  getSocket,
+} from "./lib/nakama";
 import "./App.css";
 
 type MatchDataLike = {
@@ -47,7 +52,9 @@ function App() {
   }, [myMark]);
 
   const isMyTurn = useMemo(() => {
-    return Boolean(userId && activePlayer && userId === activePlayer && !winner);
+    return Boolean(
+      userId && activePlayer && userId === activePlayer && !winner,
+    );
   }, [userId, activePlayer, winner]);
 
   const timerHudLabel = useMemo(() => {
@@ -113,13 +120,17 @@ function App() {
     const md = matchData as MatchDataLike;
     const op = md?.opCode ?? md?.op_code ?? md?.opcode ?? null;
     const opNum =
-      op === null || op === undefined || (typeof op !== "number" && typeof op !== "string")
+      op === null ||
+      op === undefined ||
+      (typeof op !== "number" && typeof op !== "string")
         ? null
         : Number(op);
 
     const parsed = parsePayload(md?.data ?? md?.payload ?? md);
     const p =
-      parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
+      parsed && typeof parsed === "object"
+        ? (parsed as Record<string, unknown>)
+        : null;
 
     if (opNum === OPCODE_START || opNum === OPCODE_UPDATE) {
       const nextBoard = Array.isArray(p?.board)
@@ -136,18 +147,23 @@ function App() {
         setMarks(nextMarks);
       }
 
-      const nextActive = typeof p?.activePlayer === "string" ? p.activePlayer : null;
+      const nextActive =
+        typeof p?.activePlayer === "string" ? p.activePlayer : null;
       setActivePlayer(nextActive);
 
       const nextTicks =
-        typeof p?.deadlineRemainingTicks === "number" ? p.deadlineRemainingTicks : 0;
+        typeof p?.deadlineRemainingTicks === "number"
+          ? p.deadlineRemainingTicks
+          : 0;
       setRemainingSeconds(Math.max(0, Math.ceil(nextTicks / TICK_RATE)));
 
       setWinner(null);
       setWinnerPositions(null);
       setResultMessage(null);
       setStatus(
-        nextActive && uid && nextActive === uid ? "Your turn" : "Opponent's turn"
+        nextActive && uid && nextActive === uid
+          ? "Your turn"
+          : "Opponent's turn",
       );
       return;
     }
@@ -161,7 +177,9 @@ function App() {
       const winnerId = typeof p?.winner === "string" ? p.winner : null;
       const reason = typeof p?.reason === "string" ? p.reason : "completed";
       const nextWinnerPositions = Array.isArray(p?.winnerPositions)
-        ? (p.winnerPositions as unknown[]).map((v) => (typeof v === "number" ? v : 0))
+        ? (p.winnerPositions as unknown[]).map((v) =>
+            typeof v === "number" ? v : 0,
+          )
         : null;
 
       setWinner(winnerId);
@@ -247,7 +265,11 @@ function App() {
       if (cell !== 0) return;
 
       const sock = getSocket();
-      await sock.sendMatchState(matchId, OPCODE_MOVE, JSON.stringify({ position }));
+      await sock.sendMatchState(
+        matchId,
+        OPCODE_MOVE,
+        JSON.stringify({ position }),
+      );
       setStatus("Move sent...");
     } catch (err) {
       console.error(err);
@@ -278,7 +300,6 @@ function App() {
       <section className="game-shell">
         <header className="game-header">
           <h1 className="game-title">Tic-Tac-Toe Multiplayer</h1>
-          <p className="game-subtitle">Server-authoritative realtime match</p>
         </header>
 
         <section className="hud-row">
@@ -297,15 +318,25 @@ function App() {
         </section>
 
         <div className="action-row">
-          <button className="action-btn" onClick={handleConnect} disabled={isConnected}>
+          <button
+            className="action-btn"
+            onClick={handleConnect}
+            disabled={isConnected}
+          >
             {isConnected ? "Connected" : "Connect"}
           </button>
-          <button className="action-btn" onClick={handleFindMatch} disabled={!isConnected}>
+          <button
+            className="action-btn"
+            onClick={handleFindMatch}
+            disabled={!isConnected}
+          >
             Find Match
           </button>
         </div>
 
-        <section className="board">{Array.from({ length: 9 }).map((_, i) => renderCell(i))}</section>
+        <section className="board">
+          {Array.from({ length: 9 }).map((_, i) => renderCell(i))}
+        </section>
 
         {resultMessage && <div className="result-banner">{resultMessage}</div>}
 
