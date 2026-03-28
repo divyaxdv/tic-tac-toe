@@ -7,6 +7,21 @@ Server-authoritative multiplayer Tic-Tac-Toe: **Nakama** (TypeScript runtime) fo
 - **Node.js** 18+ (for building frontend and Nakama TS runtime)
 - **Docker Desktop** (or Docker Engine + Compose) for local Nakama + PostgreSQL
 
+## Configuration (secrets)
+
+Do not commit real credentials. Use the tracked templates only:
+
+| File | Action |
+|------|--------|
+| **`.env.example`** (repo root) | Copy to **`.env`**: `cp .env.example .env`. Sets Postgres password and host for `docker compose`. |
+| **`frontend/.env.example`** | Copy to **`frontend/.env`**: `cp frontend/.env.example frontend/.env`. Sets `VITE_*` client variables (host, port, server key, SSL). |
+
+`.env` and `frontend/.env` are gitignored. For **Vercel** (or similar), define the same `VITE_*` variables in the project’s environment settings.
+
+**Production / Render:** Nakama reads **`DATABASE_URL`** or **`NAKAMA_DATABASE_ADDRESS`** at runtime (see `backend/docker-entrypoint.sh`); set those in the host dashboard, not in the repo.
+
+**Docker build context:** Build the Nakama image with the **`backend/`** directory as context (so `docker-entrypoint.sh` is included), e.g. `docker build -f Dockerfile .` run from `backend/`, or set the host’s root directory to **`backend`**. Do not override the container start command unless you know the path; the image **`ENTRYPOINT`** is **`/bin/sh /docker-entrypoint.sh`** (migrations, then `nakama`).
+
 ## Project layout
 
 ```
@@ -49,16 +64,16 @@ PostgreSQL is **not** published to the host by default (only Nakama ports are). 
 
 ### 1. Start Nakama + PostgreSQL
 
-From the repo root:
+From the repo root, create a root `.env` (see **Configuration** above), then:
 
 ```bash
 docker compose up --build
 ```
 
-Wait until both services are healthy. Verify Nakama HTTP:
+Wait until both services are healthy. Verify Nakama HTTP (adjust host/port if you changed them):
 
 ```bash
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:7350/
+curl -s -o /dev/null -w "%{http_code}\n" "http://127.0.0.1:7350/"
 ```
 
 Expect `200`.
@@ -77,6 +92,8 @@ The Docker image runs this during `docker compose build`.
 
 ### 3. Start the frontend
 
+Create `frontend/.env` from the example (see **Configuration**), then:
+
 ```bash
 cd frontend
 npm install
@@ -87,14 +104,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 
 ### 4. Point the client at Nakama
 
-By default `frontend/src/lib/nakama.ts` uses:
-
-- Host: `127.0.0.1`
-- Port: `7350`
-- Server key: `defaultkey`
-- SSL: `false`
-
-For a deployed server, change these values (prefer **environment variables** + Vite `import.meta.env` so you don’t commit hostnames).
+The client reads **`VITE_NAKAMA_HOST`**, **`VITE_NAKAMA_PORT`**, **`VITE_NAKAMA_SERVER_KEY`**, and **`VITE_NAKAMA_USE_SSL`** from `frontend/.env` (or from the host platform’s env at build time). Edit `frontend/.env` for local dev; use your host’s dashboard for production builds.
 
 ---
 

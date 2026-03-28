@@ -1,9 +1,19 @@
 import { Client, Session, Socket } from "@heroiclabs/nakama-js";
 
-const NAKAMA_SERVER_KEY = "defaultkey";
-const NAKAMA_HOST = "127.0.0.1";
-const NAKAMA_PORT = "7350";
-const NAKAMA_USE_SSL = false;
+function requireEnv(name: keyof ImportMetaEnv): string {
+  const v = import.meta.env[name];
+  if (typeof v !== "string" || v.trim() === "") {
+    throw new Error(
+      `Missing ${String(name)}. Copy frontend/.env.example to frontend/.env and set values.`,
+    );
+  }
+  return v;
+}
+
+const NAKAMA_SERVER_KEY = requireEnv("VITE_NAKAMA_SERVER_KEY");
+const NAKAMA_HOST = requireEnv("VITE_NAKAMA_HOST");
+const NAKAMA_PORT = requireEnv("VITE_NAKAMA_PORT");
+const NAKAMA_USE_SSL = import.meta.env.VITE_NAKAMA_USE_SSL === "true";
 
 let client: Client;
 let session: Session;
