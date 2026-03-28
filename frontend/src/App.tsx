@@ -319,10 +319,12 @@ function App() {
     .join(" ");
 
   return (
-    <main className={`game-screen${outcomeTone ? ` game-screen--${outcomeTone}` : ""}`}>
+    <main
+      className={`game-screen${outcomeTone ? ` game-screen--${outcomeTone}` : ""}`}
+    >
       <section className={shellClass}>
         <header className="game-header">
-          <h1 className="game-title">Tic-Tac-Toe Multiplayer</h1>
+          <h1 className="game-title">Tic-Tac-Toe</h1>
         </header>
 
         <section className="hud-row">
@@ -365,10 +367,7 @@ function App() {
         </div>
 
         <section
-          className={[
-            "board",
-            outcomeTone ? `board--${outcomeTone}` : "",
-          ]
+          className={["board", outcomeTone ? `board--${outcomeTone}` : ""]
             .filter(Boolean)
             .join(" ")}
         >
