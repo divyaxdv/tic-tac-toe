@@ -45,7 +45,7 @@ export function getSocket(): Socket {
 
 export async function findMatch(): Promise<string> {
   const cl = getClient();
-  const rpcResult = await cl.rpc(session, "find_match", "{}");
+  const rpcResult = await cl.rpc(session, "find_match", {});
   const payload = rpcResult.payload as { matchId: string };
   return payload.matchId;
 }
