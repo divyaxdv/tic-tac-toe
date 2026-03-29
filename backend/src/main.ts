@@ -2,7 +2,8 @@ const moduleName = "tic-tac-toe";
 
 const tickRate = 5;
 const maxPlayers = 2;
-const maxEmptySec = 30;
+/** Close the match if no game starts (still waiting in lobby) within this time. */
+const maxLobbyWaitSec = 120;
 
 interface MatchState {
   board: number[];
@@ -14,6 +15,8 @@ interface MatchState {
   playing: boolean;
   presences: { [userId: string]: nkruntime.Presence };
   nextGameRemainingTicks: number;
+  /** Decremented each match tick while waiting for a game to start; then match ends. */
+  lobbyTicksRemaining: number;
 }
 
 const Mark = {
@@ -48,6 +51,7 @@ function matchInit(
     playing: false,
     presences: {},
     nextGameRemainingTicks: 0,
+    lobbyTicksRemaining: tickRate * maxLobbyWaitSec,
   };
 
   return {
@@ -170,7 +174,20 @@ function matchLoop(
 ): { state: nkruntime.MatchState } | null {
   const s = state as MatchState;
 
+  if (!s.playing && Object.keys(s.marks).length === 0) {
+    s.lobbyTicksRemaining--;
+    if (s.lobbyTicksRemaining <= 0) {
+      logger.info("Lobby timed out after %ds", maxLobbyWaitSec);
+      return null;
+    }
+  }
+
+  // First matchLoop tick can run before joinMatch adds presences; returning null
+  // would stop the match and clients get "Match not found" on join.
   if (Object.keys(s.presences).length === 0) {
+    if (!s.playing && Object.keys(s.marks).length === 0) {
+      return { state: s };
+    }
     return null;
   }
 

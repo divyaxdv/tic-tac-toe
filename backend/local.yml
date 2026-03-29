@@ -7,10 +7,9 @@ runtime:
 session:
   token_expiry_sec: 7200
 socket:
+  server_key: "defaultkey"
   max_message_size_bytes: 4096
   max_request_size_bytes: 131072
-socket:
-  server_key: "defaultkey"
   allowed_origins:
     - "https://tic-tac-toe-omega-two-73.vercel.app"
     - "http://localhost:5173" # For local development
