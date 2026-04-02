@@ -143,4 +143,4 @@ Match messages use **opcodes** (see `backend/src/main.ts`):
 - `UPDATE` — board + active player + turn timer ticks
 - `DONE` — win / draw / timeout / opponent left
 - `MOVE` — client sends `{ position: 0..8 }`
-- `REJECTED` — illegal move or wrong turn
+- `REJECTED` — illegal move/wrong turn
